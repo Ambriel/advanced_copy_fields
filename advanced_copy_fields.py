@@ -1,50 +1,48 @@
 # -*- coding: utf-8 -*-
 
 """
-Anki Add-on: Advanced Copy Fields
+Anki Add-on: Advanced Copy Fields for version 2.1.x
+
+Updated May 3, 2019
 
 Replace, copy or swap field content from among field(s) to
 another field, batch processing several notes at a time.
 
-Copyright: (c) Ambriel Angel 2017 (http://www.ambrielnet.com)
+Copyright: (c) Ambriel Angel 2019 (http://www.ambrielnet.com)
 License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
 """
-
-import string,re
-import os, tempfile
-import time, random, socket, hashlib #guid
-
+import string,re,uuid
 from aqt.qt import *
-from aqt.utils import tooltip, askUser, getFile
+from aqt.utils import tooltip, askUser
 from anki.hooks import addHook
-from PyQt4 import QtGui, QtCore
+from PyQt6 import QtCore, QtGui, QtWidgets
 
-
-class CFieldMan(object):
+class CAdvCopy(object):
     """
     Generates a universally unique ID. args make it more random,
     if used.
     """
     fieldlist = {'xxx': 999}
-    template = u""
-
+    template = ""
+    
     def __init__(self,fieldlist,template):
         #clear out the uuid array. this just sets up a ready array
         self.fieldlist.clear()
-        self.template = template.decode('utf-8')
-        #self.template = template
+        ##self.template = template.decode('utf-8')
+        self.template = template
         #Generate uuid for each field name in record
         for field in fieldlist:
-            suuid = self.guid()
-            self.fieldlist[field] = suuid #string.replace(suuid,"-","")
+            u = uuid.uuid4()
+            suuid = str(u.hex)
+            self.fieldlist[field] = suuid
 
-    def get_uuid(self,field_name):
+    def _get_uuid(self,field_name):
         try:
             return self.fieldlist[field_name]
         except IndexError:
             return ""
 
-    def get_name(self,uuid_str):
+    def _get_name(self,uuid_str):
         for key,value in self.fieldlist:
             if value == uuid_str:
                 return key
@@ -52,38 +50,21 @@ class CFieldMan(object):
 
     def process(self,record):
         result = "";
-        #string.replace(suuid,"-","")
 
         #step 1, replace {{field}} with {{uuid}}
         #this extra steps prevents field values posing a possible issue when converting templates
         result = self.template #should already be utf-8
-        for key,value in self.fieldlist.iteritems():
-            result = result.replace("{{"+key+"}}",self.get_uuid(key))
 
+        for key,value in self.fieldlist.items():
+            result = result.replace("{{"+key+"}}",self._get_uuid(key))
+                    
         #step 2, replace {{uuid}} with value
-        for (key,value) in record.items():
+        for (key,value) in list(record.items()):
             if key in self.fieldlist:
-                suuid_tag = self.get_uuid(key)
+                suuid_tag = self._get_uuid(key)
                 result = result.replace(suuid_tag,value)
-
+                     
         return result
-
-    def guid( *args ):
-        """
-        Generates a universally unique ID. args make it more random,
-        if used.
-        """
-        t = long( time.time() * 1000 )
-        r = long( random.random()*100000000000000000L )
-        try:
-            a = socket.gethostbyname( socket.gethostname() )
-        except:
-            # if we can't get a network address, just imagine one
-            a = random.random()*100000000000000000L
-        data = str(t)+' '+str(r)+' '+str(a)+' '+str(args)
-        data = hashlib.md5(data).hexdigest()
-
-        return str(data)
 
 
 class UAdvancedCopy(QDialog):
@@ -110,29 +91,29 @@ class UAdvancedCopy(QDialog):
         AdvancedCopy.resize(330, 195)
         AdvancedCopy.setMinimumSize(QtCore.QSize(330, 195))
         AdvancedCopy.setSizeGripEnabled(False)
-        self.vMainLayout = QtGui.QVBoxLayout(AdvancedCopy)
+        self.vMainLayout = QtWidgets.QVBoxLayout(AdvancedCopy)
         self.vMainLayout.setObjectName("vMainLayout")
         #======================================================
         # Action/Source/Destination widget
         #======================================================
-        self.widgetPrimaryCtrls = QtGui.QWidget(AdvancedCopy)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        self.widgetPrimaryCtrls = QtWidgets.QWidget(AdvancedCopy)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widgetPrimaryCtrls.sizePolicy().hasHeightForWidth())
         self.widgetPrimaryCtrls.setSizePolicy(sizePolicy)
         self.widgetPrimaryCtrls.setMaximumSize(QtCore.QSize(640, 16777215))
         self.widgetPrimaryCtrls.setObjectName("widgetPrimaryCtrls")
-        self.vlWidgetSource = QtGui.QVBoxLayout(self.widgetPrimaryCtrls)
+        self.vlWidgetSource = QtWidgets.QVBoxLayout(self.widgetPrimaryCtrls)
         self.vlWidgetSource.setContentsMargins(0, 0, 0, 0)
         self.vlWidgetSource.setObjectName("vlWidgetSource")
         #======================================================
         # Action Widget
         #======================================================
-        self.hlAction = QtGui.QHBoxLayout()
+        self.hlAction = QtWidgets.QHBoxLayout()
         self.hlAction.setObjectName("hlAction")
-        self.lblAction = QtGui.QLabel(self.widgetPrimaryCtrls)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        self.lblAction = QtWidgets.QLabel(self.widgetPrimaryCtrls)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lblAction.sizePolicy().hasHeightForWidth())
@@ -146,9 +127,9 @@ class UAdvancedCopy(QDialog):
         self.lblAction.setObjectName("lblAction")
         self.hlAction.addWidget(self.lblAction)
         #Setup combobox
-        self.cmbAction = QtGui.QComboBox(self.widgetPrimaryCtrls)
+        self.cmbAction = QtWidgets.QComboBox(self.widgetPrimaryCtrls)
         self.cmbAction.setEnabled(True)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Ignored)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.cmbAction.sizePolicy().hasHeightForWidth())
@@ -164,16 +145,16 @@ class UAdvancedCopy(QDialog):
         self.cmbAction.addItem("") #4 Swap
         self.cmbAction.addItem("") #5 Custom
         self.hlAction.addWidget(self.cmbAction)
-        spacerItem = QtGui.QSpacerItem(175, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(175, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.hlAction.addItem(spacerItem)
         self.vlWidgetSource.addLayout(self.hlAction)
         #======================================================
         # Source Widget
         #======================================================
-        self.hlSource = QtGui.QHBoxLayout()
+        self.hlSource = QtWidgets.QHBoxLayout()
         self.hlSource.setObjectName("hlSource")
-        self.lblSource = QtGui.QLabel(self.widgetPrimaryCtrls)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        self.lblSource = QtWidgets.QLabel(self.widgetPrimaryCtrls)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lblSource.sizePolicy().hasHeightForWidth())
@@ -187,9 +168,9 @@ class UAdvancedCopy(QDialog):
         self.lblSource.setObjectName("lblSource")
         self.hlSource.addWidget(self.lblSource)
         #Set up combobox
-        self.cmbSource = QtGui.QComboBox(self.widgetPrimaryCtrls)
+        self.cmbSource = QtWidgets.QComboBox(self.widgetPrimaryCtrls)
         self.cmbSource.setEnabled(True)
-        sizePolicySD = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored)
+        sizePolicySD = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
         sizePolicySD.setHorizontalStretch(0)
         sizePolicySD.setVerticalStretch(0)
         sizePolicySD.setHeightForWidth(self.cmbSource.sizePolicy().hasHeightForWidth())
@@ -203,9 +184,9 @@ class UAdvancedCopy(QDialog):
         #------------------------------------------------------
         self.hlSource.addWidget(self.cmbSource)
         #Setup Insert button
-        self.btnInsert = QtGui.QPushButton(self.widgetPrimaryCtrls)
+        self.btnInsert = QtWidgets.QPushButton(self.widgetPrimaryCtrls)
         self.btnInsert.setEnabled(True)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnInsert.sizePolicy().hasHeightForWidth())
@@ -216,16 +197,16 @@ class UAdvancedCopy(QDialog):
         self.btnInsert.setObjectName("btnInsert")
         self.hlSource.addWidget(self.btnInsert)
 
-        spacerItem_cmbSource = QtGui.QSpacerItem(50, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem_cmbSource = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.hlSource.addItem(spacerItem_cmbSource)
         self.vlWidgetSource.addLayout(self.hlSource)
         #======================================================
         # Destination Widget
         #======================================================
-        self.hlDestinaton = QtGui.QHBoxLayout()
+        self.hlDestinaton = QtWidgets.QHBoxLayout()
         self.hlDestinaton.setObjectName("hlDestinaton")
-        self.lblDestination = QtGui.QLabel(self.widgetPrimaryCtrls)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        self.lblDestination = QtWidgets.QLabel(self.widgetPrimaryCtrls)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lblDestination.sizePolicy().hasHeightForWidth())
@@ -239,7 +220,7 @@ class UAdvancedCopy(QDialog):
         self.lblDestination.setObjectName("lblDestination")
         self.hlDestinaton.addWidget(self.lblDestination)
         # Set up combobox
-        self.cmbDestination = QtGui.QComboBox(self.widgetPrimaryCtrls)
+        self.cmbDestination = QtWidgets.QComboBox(self.widgetPrimaryCtrls)
         self.cmbDestination.setSizePolicy(sizePolicySD)
         self.cmbDestination.setMinimumSize(QtCore.QSize(200, 0))
         self.cmbDestination.setMaximumSize(QtCore.QSize(250, 16777215))
@@ -250,7 +231,7 @@ class UAdvancedCopy(QDialog):
         self.cmbDestination.addItems(fields)
         #------------------------------------------------------
         self.hlDestinaton.addWidget(self.cmbDestination)
-        spacerItem1 = QtGui.QSpacerItem(50, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum) #HELLO HERE
+        spacerItem1 = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum) #HELLO HERE
         self.hlDestinaton.addItem(spacerItem1)
         self.vlWidgetSource.addLayout(self.hlDestinaton)
         #------------------------------------------------------
@@ -260,13 +241,13 @@ class UAdvancedCopy(QDialog):
         #======================================================
         # 'Custom' Widget
         #======================================================
-        self.groupTemplate = QtGui.QGroupBox(AdvancedCopy)
+        self.groupTemplate = QtWidgets.QGroupBox(AdvancedCopy)
         self.groupTemplate.setObjectName("groupTemplate")
-        self.vlGroupTemplate = QtGui.QVBoxLayout(self.groupTemplate)
+        self.vlGroupTemplate = QtWidgets.QVBoxLayout(self.groupTemplate)
         self.vlGroupTemplate.setObjectName("vlGroupTemplate")
-        self.txtCustom = QtGui.QPlainTextEdit(self.groupTemplate)
+        self.txtCustom = QtWidgets.QPlainTextEdit(self.groupTemplate)
         self.txtCustom.setEnabled(True)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.txtCustom.sizePolicy().hasHeightForWidth())
@@ -274,8 +255,8 @@ class UAdvancedCopy(QDialog):
         self.txtCustom.setMinimumSize(QtCore.QSize(0, 45))
         self.txtCustom.setSizeIncrement(QtCore.QSize(0, 0))
         self.txtCustom.setBaseSize(QtCore.QSize(0, 50))
-        self.txtCustom.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.txtCustom.setFrameShadow(QtGui.QFrame.Plain)
+        self.txtCustom.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.txtCustom.setFrameShadow(QtWidgets.QFrame.Plain)
         self.txtCustom.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.txtCustom.setPlainText("")
         self.txtCustom.setObjectName("txtCustom")
@@ -284,8 +265,8 @@ class UAdvancedCopy(QDialog):
         #======================================================
         # Main Buttons Widget
         #======================================================
-        self.widgetMainButtons = QtGui.QWidget(AdvancedCopy)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Fixed)
+        self.widgetMainButtons = QtWidgets.QWidget(AdvancedCopy)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widgetMainButtons.sizePolicy().hasHeightForWidth())
@@ -293,15 +274,15 @@ class UAdvancedCopy(QDialog):
         self.widgetMainButtons.setMinimumSize(QtCore.QSize(250, 0))
         self.widgetMainButtons.setMaximumSize(QtCore.QSize(0, 60))
         self.widgetMainButtons.setObjectName("widgetMainButtons")
-        self.vlWidgetMainButtons = QtGui.QVBoxLayout(self.widgetMainButtons)
+        self.vlWidgetMainButtons = QtWidgets.QVBoxLayout(self.widgetMainButtons)
         self.vlWidgetMainButtons.setContentsMargins(0, 0, 0, 0)
         self.vlWidgetMainButtons.setObjectName("vlWidgetMainButtons")
-        self.hlMainButtons = QtGui.QHBoxLayout()
+        self.hlMainButtons = QtWidgets.QHBoxLayout()
         self.hlMainButtons.setObjectName("hlMainButtons")
 
         # Cancel Button setup
-        self.btnCancel = QtGui.QPushButton(self.widgetMainButtons)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
+        self.btnCancel = QtWidgets.QPushButton(self.widgetMainButtons)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnCancel.sizePolicy().hasHeightForWidth())
@@ -312,8 +293,8 @@ class UAdvancedCopy(QDialog):
         self.hlMainButtons.addWidget(self.btnCancel)
 
         # OK Button setup
-        self.btnOK = QtGui.QPushButton(self.widgetMainButtons)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
+        self.btnOK = QtWidgets.QPushButton(self.widgetMainButtons)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnOK.sizePolicy().hasHeightForWidth())
@@ -327,7 +308,7 @@ class UAdvancedCopy(QDialog):
         self.vlWidgetMainButtons.addLayout(self.hlMainButtons)
         self.vMainLayout.addWidget(self.widgetMainButtons)
         #------------------------------------------------------
-        self.retranslateUi()
+        self._retranslateUi()
         #------------------------------------------------------
         QtCore.QMetaObject.connectSlotsByName(AdvancedCopy)
         #======================================================
@@ -339,54 +320,80 @@ class UAdvancedCopy(QDialog):
         self.btnInsert.clicked.connect(self.onInsert)
         #------------------------------------------------------
         self.onCustom()
-        self.processTemplate("<br>")
+        self._processTemplate("<br>")
         #------------------------------------------------------
         if self.cmbDestination.count() > 1:
             self.cmbDestination.setCurrentIndex(1)
         #------------------------------------------------------
-        #btnOK.clicked.connect(lambda state, x="saysomething": self.onConfirm)
-        #btnOK.clicked.connect(lambda state, x="replace": self.onConfirm)
         self.btnOK.clicked.connect(self.onConfirm)
         self.btnCancel.clicked.connect(self.close)
         #------------------------------------------------------
 
 
-    def retranslateUi(self):
+    def _retranslateUi(self):
         AdvancedCopy = self
-        AdvancedCopy.setWindowTitle(QtGui.QApplication.translate("AdvancedCopy", "Advanced Copy Fields", None, QtGui.QApplication.UnicodeUTF8))
-        self.lblAction.setText(QtGui.QApplication.translate("AdvancedCopy", "Action:", None, QtGui.QApplication.UnicodeUTF8))
-        self.cmbAction.setItemText(0, QtGui.QApplication.translate("AdvancedCopy", "Replace", None, QtGui.QApplication.UnicodeUTF8))
-        self.cmbAction.setItemText(1, QtGui.QApplication.translate("AdvancedCopy", "Copy After", None, QtGui.QApplication.UnicodeUTF8))
-        self.cmbAction.setItemText(2, QtGui.QApplication.translate("AdvancedCopy", "Copy Before", None, QtGui.QApplication.UnicodeUTF8))
-        self.cmbAction.setItemText(3, QtGui.QApplication.translate("AdvancedCopy", "Move", None, QtGui.QApplication.UnicodeUTF8))
-        self.cmbAction.setItemText(4, QtGui.QApplication.translate("AdvancedCopy", "Swap", None, QtGui.QApplication.UnicodeUTF8))
-        self.cmbAction.setItemText(5, QtGui.QApplication.translate("AdvancedCopy", "Custom", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnInsert.setText(QtGui.QApplication.translate("AdvancedCopy", ">>", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupTemplate.setTitle(QtGui.QApplication.translate("AdvancedCopy", "Template:", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnCancel.setText(QtGui.QApplication.translate("AdvancedCopy", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
-        self.btnOK.setText(QtGui.QApplication.translate("AdvancedCopy", "OK", None, QtGui.QApplication.UnicodeUTF8))
+        AdvancedCopy.setWindowTitle(QtCore.QCoreApplication.translate("AdvancedCopy", "Advanced Copy Fields", None))
+        self.lblAction.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Action:", None))
+        self.cmbAction.setItemText(0, QtCore.QCoreApplication.translate("AdvancedCopy", "Replace", None))
+        self.cmbAction.setItemText(1, QtCore.QCoreApplication.translate("AdvancedCopy", "Copy After", None))
+        self.cmbAction.setItemText(2, QtCore.QCoreApplication.translate("AdvancedCopy", "Copy Before", None))
+        self.cmbAction.setItemText(3, QtCore.QCoreApplication.translate("AdvancedCopy", "Move", None))
+        self.cmbAction.setItemText(4, QtCore.QCoreApplication.translate("AdvancedCopy", "Swap", None))
+        self.cmbAction.setItemText(5, QtCore.QCoreApplication.translate("AdvancedCopy", "Custom", None))
+        self.btnInsert.setText(QtCore.QCoreApplication.translate("AdvancedCopy", ">>", None))
+        self.groupTemplate.setTitle(QtCore.QCoreApplication.translate("AdvancedCopy", "Template:", None))
+        self.btnCancel.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Cancel", None))
+        self.btnOK.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "OK", None))
 
         idx = self.cmbAction.currentIndex()
 
         if idx == 0:   # If Replace
-            self.lblSource.setText(QtGui.QApplication.translate("AdvancedCopy", "Source Field:", None, QtGui.QApplication.UnicodeUTF8))
-            self.lblDestination.setText(QtGui.QApplication.translate("AdvancedCopy", "Replace:", None, QtGui.QApplication.UnicodeUTF8))
-        elif idx == 1: # Copy After
-            self.lblSource.setText(QtGui.QApplication.translate("AdvancedCopy", "Copy Field:", None, QtGui.QApplication.UnicodeUTF8))
-            self.lblDestination.setText(QtGui.QApplication.translate("AdvancedCopy", "After:", None, QtGui.QApplication.UnicodeUTF8))
+            self.lblSource.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Source Field:", None))
+            self.lblDestination.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Replace:", None))
+        elif idx == 1: # Copy After_get_name
+            self.lblSource.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Copy Field:", None))
+            self.lblDestination.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "After:", None))
         elif idx == 2: # Copy Before
-            self.lblSource.setText(QtGui.QApplication.translate("AdvancedCopy", "Copy Field:", None, QtGui.QApplication.UnicodeUTF8))
-            self.lblDestination.setText(QtGui.QApplication.translate("AdvancedCopy", "Before:", None, QtGui.QApplication.UnicodeUTF8))
+            self.lblSource.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Copy Field:", None))
+            self.lblDestination.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Before:", None))
         elif idx == 3: # Move
-            self.lblSource.setText(QtGui.QApplication.translate("AdvancedCopy", "Move Field:", None, QtGui.QApplication.UnicodeUTF8))
-            self.lblDestination.setText(QtGui.QApplication.translate("AdvancedCopy", "To:", None, QtGui.QApplication.UnicodeUTF8))
+            self.lblSource.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Move Field:", None))
+            self.lblDestination.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "To:", None))
         elif idx == 4: # Swap
-            self.lblSource.setText(QtGui.QApplication.translate("AdvancedCopy", "Swap Field:", None, QtGui.QApplication.UnicodeUTF8))
-            self.lblDestination.setText(QtGui.QApplication.translate("AdvancedCopy", "With:", None, QtGui.QApplication.UnicodeUTF8))
+            self.lblSource.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Swap Field:", None))
+            self.lblDestination.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "With:", None))
         elif idx == 5: # Custom
-            self.lblSource.setText(QtGui.QApplication.translate("AdvancedCopy", "Insert:", None, QtGui.QApplication.UnicodeUTF8))
-            self.lblDestination.setText(QtGui.QApplication.translate("AdvancedCopy", "Destination:", None, QtGui.QApplication.UnicodeUTF8))
+            self.lblSource.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Insert:", None))
+            self.lblDestination.setText(QtCore.QCoreApplication.translate("AdvancedCopy", "Destination:", None))
         #------------------------------------------------------
+
+    def _processTemplate(self,spacer):
+        idx = self.cmbAction.currentIndex()
+        fldSource =  self.cmbSource.currentText()
+        fld2 = self.cmbDestination.currentText() #itemText(idx), currentText, currentIndex
+        if idx != 5:
+            #current_template = self.txtCustom.toPlainText()
+            new_template = self._getTemplate(idx, fldSource, fld2, spacer)
+            self.txtCustom.setPlainText( new_template )
+
+    def _getFields(self):
+        nid = self.nids[0]
+        mw = self.browser.mw
+        model = mw.col.getNote(nid).model()
+        fields = mw.col.models.fieldNames(model)
+        return fields
+
+    def _getTemplate(self,idx, fldSource, fld2, spacer):
+        if idx == 1: #Copy After
+            return "{{" + fld2 + "}}" + spacer + "{{" + fldSource + "}}"
+        elif idx == 2: #Copy Before
+            return "{{" + fldSource + "}}" + spacer + "{{" + fld2 + "}}"
+        else: #Default is Replace (0), Move (3), Swap (4), Custom (5)
+            return "{{" + fldSource + "}}"
+
+    def onInsert(self):
+        cursor = self.txtCustom.textCursor()
+        cursor.insertText("{{" + self.cmbSource.currentText() +  "}}")
 
     def onCustom(self):
         isCustom =  self.cmbAction.currentText() == "Custom"
@@ -413,47 +420,18 @@ class UAdvancedCopy(QDialog):
             self.txtCustom.setTextCursor(cursor)
             self.setMinimumSize(QtCore.QSize(390, 350))
             self.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.retranslateUi()
+        self._retranslateUi()
         return isCustom
 
     def onSourceIndexChange(self,idx):
-        self.processTemplate("<br>")
+        self._processTemplate("<br>")
 
     def onDestinationIndexChange(self,idx):
-        self.processTemplate("<br>")
+        self._processTemplate("<br>")
 
     def onActionIndexChange(self,idx):
         self.onCustom()
-        self.processTemplate("<br>")
-
-    def processTemplate(self,spacer):
-        idx = self.cmbAction.currentIndex()
-        fldSource =  self.cmbSource.currentText()
-        fld2 = self.cmbDestination.currentText() #itemText(idx), currentText, currentIndex
-        if idx != 5:
-            #current_template = self.txtCustom.toPlainText()
-            new_template = self.getTemplate(idx, fldSource, fld2, spacer)
-            self.txtCustom.setPlainText( new_template )
-
-    def _getFields(self):
-        nid = self.nids[0]
-        mw = self.browser.mw
-        model = mw.col.getNote(nid).model()
-        fields = mw.col.models.fieldNames(model)
-        return fields
-
-    def onInsert(self):
-        cursor = self.txtCustom.textCursor()
-        cursor.insertText("{{" + self.cmbSource.currentText() +  "}}")
-
-
-    def getTemplate(self,idx, fldSource, fld2, spacer):
-        if idx == 1: #Copy After
-            return "{{" + fld2 + "}}" + spacer + "{{" + fldSource + "}}"
-        elif idx == 2: #Copy Before
-            return "{{" + fldSource + "}}" + spacer + "{{" + fld2 + "}}"
-        else: #Default is Replace (0), Move (3), Swap (4), Custom (5)
-            return "{{" + fldSource + "}}"
+        self._processTemplate("<br>")
 
     def onConfirm(self):
         browser = self.browser
@@ -463,20 +441,20 @@ class UAdvancedCopy(QDialog):
         fld2 = self.cmbDestination.currentText()
 
         if idx == 0:   # If Replace
-            q = (u"The contents of the field '{1}' will be replaced. The field '{0}' will replace it in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
+            q = ("The contents of the field '{1}' will be replaced. The field '{0}' will replace it in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
         elif idx == 1: # Copy After
-            q = (u"The contents of the field '{1}' will change. The field '{0}' will be appended to it in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
+            q = ("The contents of the field '{1}' will change. The field '{0}' will be appended to it in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
         elif idx == 2: # Copy Before
-            q = (u"The contents of the field '{1}' will change. The field '{0}' will be prepended to it in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
+            q = ("The contents of the field '{1}' will change. The field '{0}' will be prepended to it in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
         elif idx == 3: # Move
-            q = (u"The contents of the field '{0}' will move to field '{1}'. This will replace out field '{1}' but also empty out field '{0}' in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
+            q = ("The contents of the field '{0}' will move to field '{1}'. This will replace out field '{1}' but also empty out field '{0}' in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
         elif idx == 4: # Swap
             if fld1 == fld2:
-                QMessageBox.warning(self, "Swap Error", (u"You must select two different fields in order to swap them. You selected '{0}' in both boxes.").format(fld1))
+                QMessageBox.warning(self, "Swap Error", ("You must select two different fields in order to swap them. You selected '{0}' in both boxes.").format(fld1))
                 return
-            q = (u"The contents of the fields '{0}' and '{1}' will be swapped. The contents of '{0}' will become '{1}' and '{1}' will become '{0}', in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
+            q = ("The contents of the fields '{0}' and '{1}' will be swapped. The contents of '{0}' will become '{1}' and '{1}' will become '{0}', in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
         elif idx == 5: # Custom
-            q = (u"The contents of the field '{1}' will be replaced with the processed contents of the custom template in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
+            q = ("The contents of the field '{1}' will be replaced with the processed contents of the custom template in {2} selected note(s).<br><br>Is this okay?").format(fld1, fld2, len(nids))
         #if idx between 0 and 4
         if 0 <= idx <= 5:
             if not askUser(q, parent=self):
@@ -484,11 +462,11 @@ class UAdvancedCopy(QDialog):
 
         template = self.txtCustom.toPlainText()
         flds = self._getFields()
-        advCopy( browser,idx,nids,flds,fld1,fld2,template )
+        processIt( browser,idx,nids,flds,fld1,fld2,template )
         self.close()
 
 
-def advCopy(browser, idx, nids, flds, fld1, fld2, template):
+def processIt(browser, idx, nids, flds, fld1, fld2, template):
     mw = browser.mw
     mw.checkpoint("AdvancedCopy")
     mw.progress.start()
@@ -497,7 +475,7 @@ def advCopy(browser, idx, nids, flds, fld1, fld2, template):
 
     #If custom template:
     if idx == 5:
-        FieldMan = CFieldMan(flds,template)
+        AdvCopy = CAdvCopy(flds,template)
 
     for nid in nids:
         note = mw.col.getNote(nid)
@@ -517,7 +495,7 @@ def advCopy(browser, idx, nids, flds, fld1, fld2, template):
                 note[fld2] = note[fld1]
                 note[fld1] = swap
             elif idx == 5: #Custom
-                note[fld2] = FieldMan.process(note)
+                note[fld2] = AdvCopy.process(note)
 
             cnt += 1
             note.flush()
@@ -537,11 +515,14 @@ def onAdvCopyEdit(browser):
     dialog = UAdvancedCopy(browser, nids)
     dialog.exec_()
 
-def setupMenu(browser):
-    menu = browser.form.menuEdit
-    menu.addSeparator()
-    a = menu.addAction('Advanced Copy...')
-#    a.setShortcut(QKeySequence("Ctrl+Alt+C"))
-    browser.connect(a, SIGNAL("triggered()"), lambda b=browser: onAdvCopyEdit(b))
 
-addHook("browser.setupMenus", setupMenu)
+def onMenuSetup(browser):
+    act = QAction(browser)
+    act.setText("Advanced Copy...")
+    mn = browser.form.menu_Cards
+    mn.addSeparator()
+    mn.addAction(act)
+    act.triggered.connect(lambda b=browser: onAdvCopyEdit(browser))
+
+
+addHook("browser.setupMenus", onMenuSetup)
