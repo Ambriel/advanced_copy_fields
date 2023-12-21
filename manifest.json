@@ -1,0 +1,14 @@
+{
+    "human_version": "v1.4",
+    "name": "Advanced Copy Fields",
+    "package": "1898445115",
+    "ankiweb_id": "1898445115",
+    "author": "Ambriel",
+    "version": "v0.4.0",
+    "homepage": "https://github.com/Ambriel/advanced_copy_fields",
+    "conflicts": [
+        "batch_editing"
+    ],
+    "mod": 1698037200,
+    "min_point_version": 49
+}
