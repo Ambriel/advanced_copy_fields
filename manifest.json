@@ -7,8 +7,7 @@
     "version": "v0.4.0",
     "homepage": "https://github.com/Ambriel/advanced_copy_fields",
     "conflicts": [
-        "batch_editing"
+        "287110490"
     ],
-    "mod": 1698037200,
     "min_point_version": 49
 }
