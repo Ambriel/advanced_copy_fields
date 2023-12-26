@@ -15,7 +15,7 @@ import string,re,uuid
 from aqt.qt import *
 from aqt.utils import tooltip, askUser
 from anki.hooks import addHook
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 class CAdvCopy(object):
     """
@@ -97,7 +97,7 @@ class UAdvancedCopy(QDialog):
         # Action/Source/Destination widget
         #======================================================
         self.widgetPrimaryCtrls = QtWidgets.QWidget(AdvancedCopy)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widgetPrimaryCtrls.sizePolicy().hasHeightForWidth())
@@ -113,7 +113,7 @@ class UAdvancedCopy(QDialog):
         self.hlAction = QtWidgets.QHBoxLayout()
         self.hlAction.setObjectName("hlAction")
         self.lblAction = QtWidgets.QLabel(self.widgetPrimaryCtrls)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lblAction.sizePolicy().hasHeightForWidth())
@@ -122,14 +122,14 @@ class UAdvancedCopy(QDialog):
         self.lblAction.setMinimumSize(QtCore.QSize(100, 0))
         self.lblAction.setMaximumSize(QtCore.QSize(150, 16777215))
         self.lblAction.setBaseSize(QtCore.QSize(100, 0))
-        self.lblAction.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.lblAction.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.lblAction.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.lblAction.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lblAction.setObjectName("lblAction")
         self.hlAction.addWidget(self.lblAction)
         #Setup combobox
         self.cmbAction = QtWidgets.QComboBox(self.widgetPrimaryCtrls)
         self.cmbAction.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Ignored)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.cmbAction.sizePolicy().hasHeightForWidth())
@@ -145,7 +145,7 @@ class UAdvancedCopy(QDialog):
         self.cmbAction.addItem("") #4 Swap
         self.cmbAction.addItem("") #5 Custom
         self.hlAction.addWidget(self.cmbAction)
-        spacerItem = QtWidgets.QSpacerItem(175, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(175, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.hlAction.addItem(spacerItem)
         self.vlWidgetSource.addLayout(self.hlAction)
         #======================================================
@@ -154,7 +154,7 @@ class UAdvancedCopy(QDialog):
         self.hlSource = QtWidgets.QHBoxLayout()
         self.hlSource.setObjectName("hlSource")
         self.lblSource = QtWidgets.QLabel(self.widgetPrimaryCtrls)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lblSource.sizePolicy().hasHeightForWidth())
@@ -163,14 +163,14 @@ class UAdvancedCopy(QDialog):
         self.lblSource.setMinimumSize(QtCore.QSize(100, 0))
         self.lblSource.setMaximumSize(QtCore.QSize(150, 16777215))
         self.lblSource.setBaseSize(QtCore.QSize(100, 0))
-        self.lblSource.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.lblSource.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.lblSource.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.lblSource.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lblSource.setObjectName("lblSource")
         self.hlSource.addWidget(self.lblSource)
         #Set up combobox
         self.cmbSource = QtWidgets.QComboBox(self.widgetPrimaryCtrls)
         self.cmbSource.setEnabled(True)
-        sizePolicySD = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Ignored)
+        sizePolicySD = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
         sizePolicySD.setHorizontalStretch(0)
         sizePolicySD.setVerticalStretch(0)
         sizePolicySD.setHeightForWidth(self.cmbSource.sizePolicy().hasHeightForWidth())
@@ -186,7 +186,7 @@ class UAdvancedCopy(QDialog):
         #Setup Insert button
         self.btnInsert = QtWidgets.QPushButton(self.widgetPrimaryCtrls)
         self.btnInsert.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnInsert.sizePolicy().hasHeightForWidth())
@@ -197,7 +197,7 @@ class UAdvancedCopy(QDialog):
         self.btnInsert.setObjectName("btnInsert")
         self.hlSource.addWidget(self.btnInsert)
 
-        spacerItem_cmbSource = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem_cmbSource = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.hlSource.addItem(spacerItem_cmbSource)
         self.vlWidgetSource.addLayout(self.hlSource)
         #======================================================
@@ -206,7 +206,7 @@ class UAdvancedCopy(QDialog):
         self.hlDestinaton = QtWidgets.QHBoxLayout()
         self.hlDestinaton.setObjectName("hlDestinaton")
         self.lblDestination = QtWidgets.QLabel(self.widgetPrimaryCtrls)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lblDestination.sizePolicy().hasHeightForWidth())
@@ -215,8 +215,8 @@ class UAdvancedCopy(QDialog):
         self.lblDestination.setMinimumSize(QtCore.QSize(100, 0))
         self.lblDestination.setMaximumSize(QtCore.QSize(150, 16777215))
         self.lblDestination.setBaseSize(QtCore.QSize(100, 0))
-        self.lblDestination.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.lblDestination.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.lblDestination.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.lblDestination.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lblDestination.setObjectName("lblDestination")
         self.hlDestinaton.addWidget(self.lblDestination)
         # Set up combobox
@@ -231,7 +231,7 @@ class UAdvancedCopy(QDialog):
         self.cmbDestination.addItems(fields)
         #------------------------------------------------------
         self.hlDestinaton.addWidget(self.cmbDestination)
-        spacerItem1 = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum) #HELLO HERE
+        spacerItem1 = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum) #HELLO HERE
         self.hlDestinaton.addItem(spacerItem1)
         self.vlWidgetSource.addLayout(self.hlDestinaton)
         #------------------------------------------------------
@@ -247,7 +247,7 @@ class UAdvancedCopy(QDialog):
         self.vlGroupTemplate.setObjectName("vlGroupTemplate")
         self.txtCustom = QtWidgets.QPlainTextEdit(self.groupTemplate)
         self.txtCustom.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Ignored)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.txtCustom.sizePolicy().hasHeightForWidth())
@@ -255,9 +255,9 @@ class UAdvancedCopy(QDialog):
         self.txtCustom.setMinimumSize(QtCore.QSize(0, 45))
         self.txtCustom.setSizeIncrement(QtCore.QSize(0, 0))
         self.txtCustom.setBaseSize(QtCore.QSize(0, 50))
-        self.txtCustom.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
-        self.txtCustom.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
-        self.txtCustom.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.txtCustom.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.txtCustom.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.txtCustom.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.txtCustom.setPlainText("")
         self.txtCustom.setObjectName("txtCustom")
         self.vlGroupTemplate.addWidget(self.txtCustom)
@@ -266,7 +266,7 @@ class UAdvancedCopy(QDialog):
         # Main Buttons Widget
         #======================================================
         self.widgetMainButtons = QtWidgets.QWidget(AdvancedCopy)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widgetMainButtons.sizePolicy().hasHeightForWidth())
@@ -282,7 +282,7 @@ class UAdvancedCopy(QDialog):
 
         # Cancel Button setup
         self.btnCancel = QtWidgets.QPushButton(self.widgetMainButtons)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Ignored)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnCancel.sizePolicy().hasHeightForWidth())
@@ -294,7 +294,7 @@ class UAdvancedCopy(QDialog):
 
         # OK Button setup
         self.btnOK = QtWidgets.QPushButton(self.widgetMainButtons)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Ignored)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnOK.sizePolicy().hasHeightForWidth())
@@ -513,16 +513,14 @@ def onAdvCopyEdit(browser):
         tooltip("No cards selected.")
         return
     dialog = UAdvancedCopy(browser, nids)
-    dialog.exec()
+    dialog.exec_()
+
+def setupMenu(browser):
+    menu = browser.form.menuEdit
+    menu.addSeparator()
+    a = menu.addAction('Advanced Copy...')
+    a.setShortcut(QKeySequence("Ctrl+Alt+C"))
+    a.triggered.connect(lambda _, b=browser: onAdvCopyEdit(b))
 
 
-def onMenuSetup(browser):
-    act = QAction(browser)
-    act.setText("Advanced Copy...")
-    mn = browser.form.menu_Cards
-    mn.addSeparator()
-    mn.addAction(act)
-    act.triggered.connect(lambda b=browser: onAdvCopyEdit(browser))
-
-
-addHook("browser.setupMenus", onMenuSetup)
+addHook("browser.setupMenus", setupMenu)
