@@ -15,7 +15,9 @@ import string,re,uuid
 from aqt.qt import *
 from aqt.utils import tooltip, askUser
 from anki.hooks import addHook
+
 from PyQt6 import QtCore, QtGui, QtWidgets
+
 
 class CAdvCopy(object):
     """
