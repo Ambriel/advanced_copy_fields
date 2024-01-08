@@ -1,3 +1,8 @@
+### Update 4.01
+- Bugfixes
+- Ability to save custom shortcut
+- Moved menu option from the 'Edit' menu to the 'Notes' menu to better align with Anki's interface.
+
 ### Update 2023-12-27
 - Compatibility for qt5 and qt6 simultaneously.
   
