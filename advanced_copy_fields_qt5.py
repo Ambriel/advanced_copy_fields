@@ -3,7 +3,7 @@
 """
 Anki Add-on: Advanced Copy Fields for version 2.1.x
 
-Updated May 3, 2019
+Updated January 8, 2024
 
 Replace, copy or swap field content from among field(s) to
 another field, batch processing several notes at a time.
@@ -15,8 +15,12 @@ import uuid
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from anki.hooks import addHook
+from aqt import mw
 from aqt.qt import *
 from aqt.utils import tooltip, askUser
+
+# constants
+ADV_COPY_FIELDS_DEFAULT_SHORTCUT = "Ctrl+Alt+C"
 
 
 class CAdvCopy(object):
@@ -533,12 +537,22 @@ def onAdvCopyEdit(browser):
     dialog.exec_()
 
 
-def setupMenu(browser):
+def get_shortcut():
+    return config.setdefault("shortcut", ADV_COPY_FIELDS_DEFAULT_SHORTCUT)
+
+
+def setup_menu(browser):
     menu = browser.form.menuEdit
     menu.addSeparator()
     a = menu.addAction('Advanced Copy...')
-    a.setShortcut(QKeySequence("Ctrl+Alt+C"))
+    a.setShortcut(QKeySequence(get_shortcut()))
+    a.setObjectName("actionAdvancedCopy")
     a.triggered.connect(lambda _, b=browser: onAdvCopyEdit(b))
 
 
-addHook("browser.setupMenus", setupMenu)
+if not (config := mw.addonManager.getConfig(__name__)):
+    config: dict = {}
+    get_shortcut()
+    mw.addonManager.writeConfig(__name__, config)
+
+addHook("browser.setupMenus", setup_menu)
